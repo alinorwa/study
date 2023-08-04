@@ -1,0 +1,82 @@
+{% load static %}
+<h3>contact us</h3>
+<br />
+<div id="contact-alert"></div>
+<div class="mb-3">
+  <label for="exampleFormControlInput1" class="form-label">Your Name</label>
+  <input
+    type="text"
+    class="form-control"
+    id="name"
+    placeholder="your name here"
+  />
+  <label for="exampleFormControlInput1" class="form-label">Email address</label>
+  <input
+    type="email"
+    class="form-control"
+    id="email"
+    placeholder="name@example.com"
+  />
+</div>
+<div class="mb-3">
+  <label for="exampleFormControlTextarea1" class="form-label"
+    >Example textarea</label
+  >
+  <textarea class="form-control" id="message" rows="3"></textarea>
+  <div class="d-grid gap-2 mt-3">
+    <button class="btn btn-primary" id="contact-btn" type="button">
+      Button
+    </button>
+  </div>
+</div>
+<script src="{% static 'js/jquery-3.7.0.min.js' %}"></script>
+<script>
+  $("#contact-btn").on("click", function () {
+    let name = $("#name").val();
+    let email = $("#email").val();
+    let message = $("#message").val();
+    console.log(email, message);
+    if (!name.trim()) {
+      let commet_alert = `
+          <div class="alert alert-danger" role="alert">
+              Please enter a name , email , message !
+          </div>`;
+      $("#contact-alert").html(commet_alert);
+
+      // Clear the alert message after a certain time (e.g., 5 seconds)
+      setTimeout(function () {
+        $("#contact-alert").empty();
+      }, 2000); // 5000 milliseconds = 5 seconds
+
+      return; // Stop further processing
+    }
+    $.ajax({
+      url: '{% url "contact" %}',
+      type: "post",
+      dataType: "json",
+      data: {
+        name: name,
+        email: email,
+        message: message,
+        csrfmiddlewaretoken: "{{csrf_token}}",
+      },
+      success: function (res) {
+        console.log(res);
+        // start settimeout
+        let commet_alert = `
+          <div class="alert alert-success" role="alert">
+              Your message has send it , Thank you .
+          </div>`;
+        $("#contact-alert").html(commet_alert);
+        setTimeout(function () {
+          $("#contact-alert").empty();
+        }, 2000); // 5000 milliseconds = 5 seconds
+        // end settimeout
+        $("#name").val("");
+        $("#email").val("");
+        $("#message").val("");
+      },
+      error: function (xhr, errmsg, err) {},
+    });
+  });
+</script>

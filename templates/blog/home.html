@@ -1,0 +1,38 @@
+{% extends 'base.html' %} {% block body %}
+
+<h3>all post here</h3>
+
+<div class="row">
+  {% if posts %} {% for post in posts %}
+  <div class="col-md-4">
+    <div class="card mb-4">
+      {% if post.img %}
+      <img
+        src="{{ post.img.url }}"
+        class="card-img-top"
+        style="height: 200px; width: 350px"
+        alt="..."
+      />
+      {% else %}
+      <h4>the is no img yet !</h4>
+      {% endif %}
+
+      <div class="card-body">
+        <h5 class="card-title">{{post.title}}</h5>
+        <p class="card-text">{{post.body}}.</p>
+        <a href="{% url 'detail' post.id %}" class="btn btn-primary"
+          >Go detail</a
+        >
+      </div>
+    </div>
+  </div>
+
+  {% endfor %} {% endif %}
+
+  <hr />
+  <!-- start contact  -->
+  {% include 'blog/contact.html' %}
+  <!-- end contact  -->
+</div>
+
+{% endblock body %}

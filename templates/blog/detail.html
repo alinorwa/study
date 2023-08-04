@@ -1,0 +1,125 @@
+{% extends 'base.html' %} {% load static %} {% block body %}
+<style>
+  @import url("https://fonts.googleapis.com/icon?family=Material+Icons");
+</style>
+
+<h3>all post here</h3>
+
+<div class="row">
+  {% if post %}
+  <div class="col-md-4">
+    <div class="card">
+      {% if post.img %}
+      <img
+        src="{{ post.img.url }}"
+        class="figure-img img-fluid rounded"
+        alt="..."
+      />
+      {% else %}
+      <h4>the is no img yet !</h4>
+      {% endif %}
+      <div class="card-body">
+        <h5 class="card-title">{{ post.title }}</h5>
+        <p class="card-text">{{post.body}}.</p>
+        <!---======== start like =======-->
+        Like :
+        <span class="" id="like_count"> {{post.like_count}}</span>
+        <button class="btn btn-link" id="like-button" value="{{post.id}}">
+          {% csrf_token %}
+          <i class="material-icons" style="font-size: 48px; color: red"
+            >favorite</i
+          >
+        </button>
+        <!----======= end like ====-->
+        <a href="{% url 'home'  %}" class="btn btn-primary">Go home</a>
+      </div>
+    </div>
+  </div>
+
+  {% endif %}
+</div>
+<hr />
+
+<!---------------------------------------------------------------------------------- start comment form -->
+<div>
+  <h2>Leave a comment</h2>
+  <div id="commet-alert"></div>
+  <textarea name="" id="comment_text" cols="30" rows="5"></textarea>
+  <button type="submit" id="comment_btn" data-post="{{post.id}}">
+    add comment
+  </button>
+</div>
+<br />
+<!----------------------------------------------------------------------------------- end comment form -->
+
+<!-- Display existing comments -->
+<div id="div-comment">
+  {% for comment in comments %}
+  <p>{{ comment.user.username }} | {{ comment.body }}</p>
+  {% endfor %}
+</div>
+<hr />
+<!-- start contact  -->
+{% include 'blog/contact.html' %}
+<!-- end contact  -->
+<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+<script src="{% static 'js/jquery-3.7.0.min.js' %}"></script>
+<script>
+  $(document).on("click", "#like-button", function (e) {
+    e.preventDefault();
+    $.ajax({
+      type: "POST",
+      url: '{% url "like" %}',
+      data: {
+        postid: $("#like-button").val(),
+        csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+        action: "post",
+      },
+      success: function (json) {
+        document.getElementById("like_count").innerHTML = json["result"];
+      },
+      error: function (xhr, errmsg, err) {},
+    });
+  });
+  // ===================================== comments
+  $("#comment_btn").on("click", function () {
+    let comment = $("#comment_text").val();
+    if (!comment.trim()) {
+      let commet_alert = `
+            <div class="alert alert-danger" role="alert">
+                Please enter a comment. You should write some comment.!
+            </div>`;
+      $("#commet-alert").html(commet_alert);
+
+      // Clear the alert message after a certain time (e.g., 5 seconds)
+      setTimeout(function () {
+        $("#commet-alert").empty();
+      }, 1000); // 5000 milliseconds = 5 seconds
+
+      return; // Stop further processing
+    }
+
+    let _btnId = $(this).data("post");
+    // console.log(_comment, _btnId);
+    $.ajax({
+      url: "{% url 'commet' %}",
+      type: "post",
+      data: {
+        comment: comment,
+        postId: _btnId,
+        csrfmiddlewaretoken: "{{csrf_token}}",
+      },
+      dataType: "json",
+      success: function (res) {
+        if (res.bool == true) {
+          $("#comment_text").val("");
+        }
+        // console.log(res);
+        let _html = "<p>{{ request.user }} | " + comment + "</p> ";
+        $("#div-comment").append(_html);
+      },
+    });
+  });
+</script>
+
+{% endblock body %}
